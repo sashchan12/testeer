@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aero Express - Add-ons & Receipt</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://pyscript.net/releases/2025.2.4/core.css">
+    <script type="module" src="https://pyscript.net/releases/2025.2.4/core.js"></script>
+
+    <style>
+        body { background-color: #0f172a; color: #f8fafc; font-family: 'Gill Sans', 'Gill Sans MT', 'Gill Sans Nova', Calibri, 'Trebuchet MS', sans-serif; min-height: 100vh; }
+        .navbar { background-color: #1e293b; }
+        .card { background-color: #1e293b; color: #ffffff; border-radius: 12px; border: 1px solid #334155; }
+        .summary-row { display: flex; justify-content: space-between; padding: .4rem 0; border-bottom: 1px solid #334155; }
+        .summary-row:last-child { border-bottom: none; }
+        #seat_map { max-height: 320px; overflow-y: auto; }
+        @media print {
+            .navbar, .no-print { display: none !important; }
+            body { background: #fff; color: #000; }
+            .card { border: 1px solid #000; background: #fff; color: #000; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#">✈️ Aero Express</a>
+            <button type="button" class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#resetModal">← Back to Booking</button>
+        </div>
+    </nav>
+
+    <div class="container my-4">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+
+                <!-- Step 1: add-ons -->
+                <div id="form_card" class="card p-4 shadow">
+                    <h2 class="text-center mb-4">Add-ons & SKU</h2>
+
+                    <div id="summary" class="mb-4">
+                        <div class="summary-row"><span>Passenger</span><span id="s_passenger"></span></div>
+                        <div class="summary-row"><span>From</span><span id="s_airport"></span></div>
+                        <div class="summary-row"><span>To</span><span id="s_route"></span></div>
+                        <div class="summary-row"><span>Ticket type</span><span id="s_trip"></span></div>
+                        <div class="summary-row"><span>Travel class</span><span id="s_class"></span></div>
+                        <div class="summary-row"><span>Tickets</span><span id="s_tickets"></span></div>
+                        <div class="summary-row"><span>Seats left on route</span><span id="s_seats"></span></div>
+                        <div class="summary-row"><span>Fare</span><span id="s_fare"></span></div>
+                        <div class="summary-row"><span>Seat add-on</span><span id="s_seatfee">₱0.00</span></div>
+                        <div class="summary-row fw-bold text-success fs-5"><span>Total</span><span id="s_total"></span></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="choose_seat" class="form-label">Seat Selection Add-on (per ticket):</label>
+                        <select id="choose_seat" class="form-select" py-change="on_seat_option">
+                            <option value="">-- Select Seat Choice Option --</option>
+                            <option value="5000">Choose Seat (+₱5,000 per ticket)</option>
+                            <option value="0">Random Seat Assignment (Free)</option>
+                        </select>
+                    </div>
+
+                    <!-- Seat map: appears when "Choose Seat" is selected -->
+                    <div id="seat_picker" class="mb-3 d-none">
+                        <p id="seat_status" class="text-center fw-bold mb-2"></p>
+                        <div class="text-center small text-secondary mb-2">Front of plane</div>
+                        <div id="seat_map"></div>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-2">
+                        <button id="generateBtn" py-click="generate_sku" class="btn btn-success btn-lg">Generate SKU</button>
+                        <button id="purchaseBtn" py-click="purchase_additional" class="btn btn-primary btn-lg">Confirm & View Receipt</button>
+                    </div>
+                </div>
+
+                <!-- SKU view (Generate SKU leads here) -->
+                <div id="sku_card" class="card p-4 shadow d-none">
+                    <h2 class="text-center mb-3">Your SKU</h2>
+                    <p id="g_sku" class="text-center text-warning fw-bold display-5 mb-2"></p>
+                    <p id="g_details" class="text-center mb-4"></p>
+                    <div class="d-grid">
+                        <button py-click="back_to_addons" class="btn btn-primary btn-lg">Back to add-ons</button>
+                    </div>
+                </div>
+
+                <!-- Receipt (shown after confirming) -->
+                <div id="receipt_card" class="card p-4 shadow d-none">
+                    <h2 class="text-center mb-1">Booking Confirmed</h2>
+                    <p class="text-center text-warning fw-bold fs-4 mb-4">Ref: <span id="r_ref"></span></p>
+
+                    <div class="summary-row"><span>SKU</span><span id="r_sku"></span></div>
+                    <div class="summary-row"><span>Passenger</span><span id="r_passenger"></span></div>
+                    <div class="summary-row"><span>From</span><span id="r_airport"></span></div>
+                    <div class="summary-row"><span>To</span><span id="r_route"></span></div>
+                    <div class="summary-row"><span>Ticket type</span><span id="r_trip"></span></div>
+                    <div class="summary-row"><span>Travel class</span><span id="r_class"></span></div>
+                    <div class="summary-row"><span>Tickets</span><span id="r_tickets"></span></div>
+                    <div class="summary-row"><span>Seat</span><span id="r_seat"></span></div>
+                    <div class="summary-row"><span>Fare</span><span id="r_fare"></span></div>
+                    <div class="summary-row"><span>Seat add-on</span><span id="r_seatfee"></span></div>
+                    <div class="summary-row fw-bold text-success fs-5"><span>Total paid</span><span id="r_total"></span></div>
+
+                    <div class="d-grid gap-2 mt-4 no-print">
+                        <button class="btn btn-outline-light" onclick="window.print()">Print receipt</button>
+                        <a href="index.html" class="btn btn-primary" onclick="sessionStorage.clear()">Book another flight</a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Reset warning pop-up -->
+    <div class="modal fade" id="resetModal" tabindex="-1" aria-labelledby="resetModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark text-white border-warning">
+                <div class="modal-header border-warning">
+                    <h5 class="modal-title text-warning" id="resetModalLabel">Warning</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">Warning: This will reset your progress.</div>
+                <div class="modal-footer border-warning">
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Stay here</button>
+                    <a href="index.html" class="btn btn-warning" onclick="sessionStorage.clear()">Go back to booking</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error pop-up -->
+    <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark text-white border-danger">
+                <div class="modal-header border-danger">
+                    <h5 class="modal-title text-danger" id="errorModalLabel">Booking error</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="errorModalMessage"></div>
+                <div class="modal-footer border-danger">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="py" src="./main.py"></script>
+</body>
+</html>

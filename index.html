@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aero Express - Easy Flights booked here!</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://pyscript.net/releases/2025.2.4/core.css">
+    <script type="module" src="https://pyscript.net/releases/2025.2.4/core.js"></script>
+
+    <style>
+        body { background-color: #0f172a; color: #f8fafc; font-family: 'Gill Sans', 'Gill Sans MT', 'Gill Sans Nova', Calibri, 'Trebuchet MS', sans-serif; min-height: 100vh; }
+        .navbar { background-color: #1e293b; }
+        .card { background-color: #1e293b; color: #ffffff; border-radius: 12px; border: 1px solid #334155; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#">✈️ Aero Express</a>
+        </div>
+    </nav>
+
+    <div class="container my-4">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card p-4 shadow">
+                    <h2 class="text-center mb-4">Flight Booking</h2>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <label for="first_name" class="form-label">First Name:</label>
+                            <input type="text" id="first_name" class="form-control" placeholder="e.g. Juan">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="last_name" class="form-label">Last Name:</label>
+                            <input type="text" id="last_name" class="form-control" placeholder="e.g. Dela Cruz">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="departure_airport" class="form-label">Departure Airport:</label>
+                        <select id="departure_airport" class="form-select">
+                            <option value="">-- Select Departure Airport --</option>
+                            <option value="NAIA">Ninoy Aquino International Airport (NAIA)</option>
+                            <option value="CRK">Clark International Airport (CRK)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="flight_type" class="form-label">Flight Type:</label>
+                        <select id="flight_type" class="form-select" py-change="update_routes">
+                            <option value="">-- Select Flight Type --</option>
+                            <option value="DOM">Domestic</option>
+                            <option value="INT">International</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="ticket_type" class="form-label">Type of Ticket:</label>
+                        <select id="ticket_type" class="form-select">
+                            <option value="">-- Select Ticket Type --</option>
+                            <option value="One-Way">One-Way</option>
+                            <option value="Round-Trip">Round-Trip (2x fare)</option>
+                            <option value="Multi-City">Multi-City (1.5x fare)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="route" class="form-label">Available Routes:</label>
+                        <select id="route" class="form-select" disabled>
+                            <option value="">Choose a flight type first</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="travel_class" class="form-label">Travel Class:</label>
+                        <select id="travel_class" class="form-select">
+                            <option value="">-- Select Travel Class --</option>
+                            <option value="ECO">Economy Class (Standard Price)</option>
+                            <option value="BUS">Business Class (+₱50,000 surcharge)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="ticket_count" class="form-label">Number of Tickets:</label>
+                        <input type="number" id="ticket_count" class="form-control" value="1" min="1">
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button id="bookBtn" py-click="book_flight" class="btn btn-primary btn-lg">Continue to Add-ons</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error pop-up -->
+    <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark text-white border-danger">
+                <div class="modal-header border-danger">
+                    <h5 class="modal-title text-danger" id="errorModalLabel">Booking error</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="errorModalMessage">Error: complete all fields before proceeding</div>
+                <div class="modal-footer border-danger">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="py" src="./main.py"></script>
+</body>
+</html>
